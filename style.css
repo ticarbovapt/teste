@@ -77,12 +77,14 @@ h1,h2,h3,.btn-primary,.dice,.turn-banner{font-family:'Baloo 2',sans-serif}
 /* ---------- GAME ---------- */
 .game-wrap{
   display:grid;grid-template-columns:1fr 340px;gap:18px;
-  padding:16px;max-width:1400px;margin:0 auto;align-items:start
+  padding:14px;margin:0 auto;align-items:center;min-height:100vh
 }
 .board-area{display:flex;justify-content:center;align-items:center}
 .board{
   position:relative;
-  width:min(92vh,calc(100vw - 380px),1180px);
+  /* dimensionado pela ALTURA da tela: usa quase toda a altura disponível.
+     largura = altura * 11/8  →  97vh de altura ≈ 133vh de largura */
+  width:min(calc(100vw - 390px), 133vh, 1600px);
   aspect-ratio:11/8;
   display:grid;
   grid-template-columns:repeat(11,1fr);
