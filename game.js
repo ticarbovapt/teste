@@ -323,18 +323,23 @@ function renderTokens(){
       [r,c] = POS[p.cell];
     }
 
-    // tamanho da célula em %
+    // tamanho de uma célula em % do tabuleiro
     const cellW = 100/11, cellH = 100/8;
-    // offset para múltiplos peões na mesma casa
-    const ox = (order%2)*0.42 - 0.21 + 0.5;
-    const oy = (Math.floor(order/2))*0.42 - 0.1 + 0.5;
+    // posição dentro da célula: centralizado se sozinho, 2x2 se houver vários
+    let fx = 0.5, fy = 0.5;
+    if (grp.length > 1){
+      fx = (order % 2) ? 0.68 : 0.32;
+      fy = (Math.floor(order/2)) ? 0.68 : 0.32;
+    }
+    const cx = (c + fx) * cellW;   // centro do peão (% largura)
+    const cy = (r + fy) * cellH;   // centro do peão (% altura)
 
     const tk = document.createElement('div');
     tk.className = 'token' + (p.skip ? ' lying' : '');
     tk.style.background = p.color;
-    tk.style.left = `calc(${(c*cellW)}% + ${ox*cellW}% - 9%)`;
-    tk.style.top  = `calc(${(r*cellH)}% + ${oy*cellH}% - 9%)`;
-    tk.textContent = (order>0 || grp.length>1) ? (i+1) : '';
+    tk.style.left = `calc(${cx}% - 2.3%)`;   // metade da largura do peão (4.6%)
+    tk.style.top  = `calc(${cy}% - 3.15%)`;  // metade da altura do peão (6.3%)
+    tk.textContent = grp.length > 1 ? (i+1) : '';
     tk.title = p.name;
     board.appendChild(tk);
   });
@@ -606,13 +611,15 @@ function showChoice22(p){
   a.className='btn-primary big';
   a.style.background='linear-gradient(135deg,#6b7280,#4b5563)';
   a.style.boxShadow='0 8px 20px rgba(75,85,99,.35)';
-  a.innerHTML='🌫️ A · Atalho da Fumaça<br><small>Curto (5 casas), mas arriscado!</small>';
+  a.innerHTML='🌫️ A · Atalho da Fumaça<br><small>Curto (5 casas) e joga o dado de novo — arriscado!</small>';
   a.onclick=()=>{
     closeModal();
     p.track='short'; p.sCell=-1;
-    log(`🌫️ <b>${p.name}</b> entrou no <b>Atalho da Fumaça</b>! Curto, mas perigoso.`);
+    log(`🌫️ <b>${p.name}</b> entrou no <b>Atalho da Fumaça</b> e joga o dado de novo! 🎲`);
     renderTokens(); renderStatus();
-    finishStep();
+    // bônus: entra no atalho e joga novamente para tentar uma vantagem
+    state.busy = false;
+    $('#btn-roll').disabled = false;
   };
 
   const b = document.createElement('button');
