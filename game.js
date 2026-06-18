@@ -64,8 +64,14 @@ const SOUND = (()=>{
     unlock(){ ensure(); },
     setMuted(m){ muted = m; },
     isMuted(){ return muted; },
-    // som do "Mario entrando no cano": glissando descendente rápido
-    pipe(){ glide(1200, 90, 0.55, 'square', 0.16); glide(600, 45, 0.55, 'square', 0.07); },
+    // som do "Mario entrando no cano": escadinha de blips descendo (glub-glub 8-bit)
+    pipe(){
+      const notes=[988,830,698,587,494,415,349,294,247,208,175,147,123,98];
+      notes.forEach((f,i)=>{
+        tone(f, 0.06, 'square', 0.15, i*0.05);          // blip principal
+        tone(f/2, 0.06, 'square', 0.06, i*0.05);        // oitava abaixo, encorpa o "glub"
+      });
+    },
     click(){ tone(520,0.06,'square',0.10); },
     dice(){ noise(0.12,0.10); for(let i=0;i<3;i++) tone(180+Math.random()*120,0.05,'square',0.06,i*0.05); },
     adv(){ seq([[523,0,0.10],[659,0.09,0.10],[784,0.18,0.14]],'triangle',0.16); },
