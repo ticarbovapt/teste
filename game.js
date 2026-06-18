@@ -116,10 +116,11 @@ for (let c=10;c>=0;c--) POS.push([7,c]);
 // esquerda: rows 6..1 (idx 28..32, FIM=33)
 for (let r=6;r>=1;r--) POS.push([r,0]);
 
-/* ---------- Atalho da Fumaça (A1..A5) ---------- */
+/* ---------- Atalho da Fumaça (A1..A5) ----------
+   Diagonal reta partindo de cima da casa 22 (canto inferior) até perto do FIM. */
 const SHORTCUT = [
-  { id:'A1', nm:'Nuvem de Fumaça', ico:'🌫️', act:{type:'back',v:1},  pos:[6,4] },
-  { id:'A2', nm:'Sorte ou Revés',  ico:'❓', act:{type:'card'},      pos:[5,3] },
+  { id:'A1', nm:'Nuvem de Fumaça', ico:'🌫️', act:{type:'back',v:1},  pos:[6,5] },
+  { id:'A2', nm:'Sorte ou Revés',  ico:'❓', act:{type:'card'},      pos:[5,4] },
   { id:'A3', nm:'Pneu Furado',     ico:'🛞', act:{type:'skip'},      pos:[4,3] },
   { id:'A4', nm:'Sorte ou Revés',  ico:'❓', act:{type:'card'},      pos:[3,2] },
   { id:'A5', nm:'Ar Pesado',       ico:'🌫️', act:{type:'back',v:1},  pos:[2,1] },
@@ -249,6 +250,12 @@ function startGame(){
 function renderBoard(){
   const board = $('#board');
   board.innerHTML = '';
+
+  // faixa diagonal "Atalho da Fumaça" (decorativa, atrás das casas)
+  const road = document.createElement('div');
+  road.className = 'shortcut-road';
+  road.innerHTML = '<span>ATALHO DA FUMAÇA</span>';
+  board.appendChild(road);
 
   // casas principais
   BOARD.forEach((cell,idx)=>{
