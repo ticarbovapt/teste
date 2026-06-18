@@ -3,6 +3,64 @@
    Lógica completa do jogo de tabuleiro (2 a 4 jogadores)
    =========================================================== */
 
+/* ===========================================================
+   SOM (Web Audio API — sintetizado, sem arquivos externos)
+   =========================================================== */
+const SOUND = (()=>{
+  let ctx = null, muted = false;
+  function ensure(){
+    if (!ctx){
+      try { ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+      catch(e){ ctx = null; }
+    }
+    if (ctx && ctx.state==='suspended') ctx.resume();
+    return ctx;
+  }
+  // toca uma nota simples
+  function tone(freq, dur, type='sine', vol=0.18, when=0){
+    const c = ensure(); if(!c||muted) return;
+    const t = c.currentTime + when;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(vol, t+0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    osc.connect(gain); gain.connect(c.destination);
+    osc.start(t); osc.stop(t+dur+0.02);
+  }
+  // sequência de notas (freq, start, dur)
+  function seq(notes, type='triangle', vol=0.18){
+    notes.forEach(([f,s,d])=> tone(f,d,type,vol,s));
+  }
+  function noise(dur, vol=0.12){
+    const c = ensure(); if(!c||muted) return;
+    const n = Math.floor(c.sampleRate*dur);
+    const buf = c.createBuffer(1, n, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<n;i++) data[i] = (Math.random()*2-1)*(1-i/n);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const gain = c.createGain(); gain.gain.value = vol;
+    const hp = c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=900;
+    src.connect(hp); hp.connect(gain); gain.connect(c.destination);
+    src.start();
+  }
+  return {
+    unlock(){ ensure(); },
+    setMuted(m){ muted = m; },
+    isMuted(){ return muted; },
+    click(){ tone(520,0.06,'square',0.10); },
+    dice(){ noise(0.12,0.10); for(let i=0;i<3;i++) tone(180+Math.random()*120,0.05,'square',0.06,i*0.05); },
+    adv(){ seq([[523,0,0.10],[659,0.09,0.10],[784,0.18,0.14]],'triangle',0.16); },
+    back(){ seq([[392,0,0.12],[311,0.10,0.12],[247,0.20,0.18]],'sawtooth',0.13); },
+    skip(){ tone(196,0.30,'sawtooth',0.14); tone(165,0.30,'sine',0.10,0.05); },
+    sorte(){ seq([[659,0,0.10],[784,0.10,0.10],[988,0.20,0.10],[1319,0.30,0.22]],'triangle',0.16); },
+    reves(){ seq([[330,0,0.16],[247,0.14,0.20],[175,0.30,0.30]],'square',0.14); },
+    win(){ seq([[523,0,0.14],[659,0.13,0.14],[784,0.26,0.14],[1047,0.40,0.30],[1319,0.56,0.40]],'triangle',0.20); },
+  };
+})();
+
 /* ---------- Definição das casas do caminho principal ----------
    index 0 = INÍCIO ... 33 = FIM
    Posição na grade 11x8 (row,col) seguindo a borda em sentido horário.
@@ -139,10 +197,26 @@ $('#btn-playagain').addEventListener('click', ()=> location.reload());
 
 buildPlayerInputs();
 
+/* botão de som (mudo/ligado) */
+const btnSound = $('#btn-sound');
+if (btnSound){
+  btnSound.addEventListener('click', ()=>{
+    const m = !SOUND.isMuted();
+    SOUND.setMuted(m);
+    btnSound.textContent = m ? '🔇' : '🔊';
+    btnSound.title = m ? 'Som desligado' : 'Som ligado';
+    if (!m){ SOUND.unlock(); SOUND.click(); }
+  });
+}
+
+/* destrava o áudio no primeiro toque (iOS/Android) */
+window.addEventListener('pointerdown', ()=> SOUND.unlock(), { once:true });
+
 /* ===========================================================
    INICIAR JOGO
    =========================================================== */
 function startGame(){
+  SOUND.unlock();
   const players = [];
   $$('#player-inputs input').forEach((inp,i)=>{
     players.push({
@@ -333,6 +407,7 @@ function rollDice(){
   $('#btn-roll').disabled = true;
   const dice = $('#dice');
   dice.classList.add('rolling');
+  SOUND.dice();
 
   // animação do dado
   let ticks = 0;
@@ -390,10 +465,12 @@ function resolveCell(p, byDice){
       break;
     case 'adv':
       log(`📍 <b>${p.name}</b> parou em ${nm}: avança ${a.v}.`);
+      SOUND.adv();
       setTimeout(()=>{ if(shiftPlayer(p, a.v)!==true) finishStep(); }, 350);
       break;
     case 'back':
       log(`📍 <b>${p.name}</b> parou em ${nm}: volta ${a.v}.`);
+      SOUND.back();
       setTimeout(()=>{ if(shiftPlayer(p, -a.v)!==true) finishStep(); }, 350);
       break;
     case 'again':
@@ -404,6 +481,7 @@ function resolveCell(p, byDice){
       break;
     case 'skip':
       p.skip = true;
+      SOUND.skip();
       log(`📍 <b>${p.name}</b> em ${nm}: fica 1 rodada sem jogar. ⏸`);
       renderTokens(); renderStatus();
       finishStep();
@@ -449,6 +527,7 @@ function drawCard(p){
 
   const modal = $('#modal');
   modal.className = 'modal ' + (card.k==='sorte'?'sorte':'reves');
+  card.k==='sorte' ? SOUND.sorte() : SOUND.reves();
   $('#modal-icon').textContent = card.k==='sorte' ? '🍀' : '⚠️';
   $('#modal-title').textContent = card.k==='sorte' ? 'SORTE!' : 'REVÉS!';
   $('#modal-text').innerHTML = `<b>${card.t}</b><br>${card.d}`;
@@ -558,6 +637,7 @@ function win(p){
   state.finished = true;
   state.busy = true;
   renderTokens();
+  SOUND.win();
   log(`🏆 <b>${p.name}</b> chegou ao FIM e venceu a partida!`);
   $('#win-name').textContent = `${p.name} venceu! 🎉`;
   setTimeout(()=> $('#win-overlay').classList.add('show'), 500);

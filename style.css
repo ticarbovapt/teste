@@ -92,10 +92,43 @@ h1,h2,h3,.btn-primary,.dice,.turn-banner{font-family:'Baloo 2',sans-serif}
   padding:10px;border-radius:18px;
   box-shadow:0 20px 60px rgba(0,0,0,.5)
 }
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.btn-sound{
+  border:2px solid #e7ece8;background:#f6f8f6;border-radius:12px;
+  width:42px;height:42px;font-size:20px;cursor:pointer;line-height:1;flex:none
+}
+.btn-sound:active{transform:scale(.92)}
+
+/* ---------- TABLET / CELULAR ---------- */
 @media(max-width:1000px){
-  .game-wrap{grid-template-columns:1fr}
-  .board{width:min(96vw,640px)}
-  .panel{order:-1}
+  .game-wrap{grid-template-columns:1fr;gap:12px;padding:10px;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  .board{width:min(96vw,560px)}
+  .panel{order:0;gap:12px}
+  /* barra de controle fixa no rodapé, sempre alcançável pelo polegar */
+  .dice-box{
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    flex-direction:row;align-items:center;gap:12px;
+    background:rgba(255,255,255,.97);backdrop-filter:blur(6px);
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 20px rgba(0,0,0,.25)
+  }
+  .dice-box .dice{width:56px;height:56px;font-size:34px;flex:none}
+  .dice-box .btn-primary.big{flex:1;padding:15px}
+  .log-box{max-height:130px}
+}
+
+@media(max-width:560px){
+  .board{width:97vw}
+  .cell .nm{font-size:6.5px}
+  .cell .act{display:none}     /* economiza espaço nas casas pequenas */
+  .start-card{padding:26px 20px}
+  .logo h1{font-size:30px}
+}
+
+/* evita seleção de texto ao tocar repetidamente */
+.btn-primary,.btn-ghost,.count-picker button,.btn-sound,.cell,.dice{
+  -webkit-tap-highlight-color:transparent;user-select:none
 }
 
 .cell{
