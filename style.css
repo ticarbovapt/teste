@@ -82,16 +82,11 @@ h1,h2,h3,.btn-primary,.dice,.turn-banner{font-family:'Baloo 2',sans-serif}
 .board-area{display:flex;justify-content:center;align-items:center}
 .board{
   position:relative;
-  /* dimensionado pela ALTURA da tela: usa quase toda a altura disponível.
-     largura = altura * 11/8  →  97vh de altura ≈ 133vh de largura */
-  width:min(calc(100vw - 390px), 133vh, 1600px);
-  aspect-ratio:11/8;
-  display:grid;
-  grid-template-columns:repeat(11,1fr);
-  grid-template-rows:repeat(8,1fr);
-  gap:5px;
-  background:linear-gradient(135deg,#dfeee2,#cfe6ef);
-  padding:10px;border-radius:18px;
+  /* dimensionado pela ALTURA da tela; a imagem do tabuleiro é o fundo */
+  width:min(calc(100vw - 390px), 137vh, 1700px);
+  aspect-ratio:2188/1563;
+  background:#fff url('assets/board.jpg') center/contain no-repeat;
+  border-radius:14px;
   box-shadow:0 20px 60px rgba(0,0,0,.5)
 }
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -122,72 +117,34 @@ h1,h2,h3,.btn-primary,.dice,.turn-banner{font-family:'Baloo 2',sans-serif}
 
 @media(max-width:560px){
   .board{width:97vw}
-  .cell .nm{font-size:6.5px}
-  .cell .act{display:none}     /* economiza espaço nas casas pequenas */
   .start-card{padding:26px 20px}
   .logo h1{font-size:30px}
 }
 
 /* evita seleção de texto ao tocar repetidamente */
-.btn-primary,.btn-ghost,.count-picker button,.btn-sound,.cell,.dice{
+.btn-primary,.btn-ghost,.count-picker button,.btn-sound,.dice{
   -webkit-tap-highlight-color:transparent;user-select:none
 }
 
-/* faixa diagonal do Atalho da Fumaça (decorativa) — vai do canto da casa 22 ao FIM */
-.shortcut-road{
-  position:absolute;left:31.8%;top:56.25%;
-  width:64%;height:11.5%;
-  transform:translate(-50%,-50%) rotate(45deg);
-  background:repeating-linear-gradient(90deg,#5b6066 0 26px,#54585e 26px 52px);
-  border-radius:8px;z-index:0;
-  box-shadow:inset 0 0 0 3px rgba(255,255,255,.08), 0 6px 16px rgba(0,0,0,.25);
-  display:flex;align-items:center;justify-content:flex-end;overflow:hidden;
-  padding-right:18px;
+/* destaque da casa ativa (sobre a imagem do tabuleiro) */
+.cell-highlight{
+  position:absolute;border-radius:12px;pointer-events:none;opacity:0;
+  box-shadow:0 0 0 3px #fff, 0 0 22px 6px #ffd84d;
+  outline:3px solid #ffd84d;
+  transition:left .45s ease, top .45s ease, opacity .2s ease;z-index:6
 }
-.shortcut-road::before{
-  content:"";position:absolute;left:6%;right:6%;top:50%;height:3px;
-  background:repeating-linear-gradient(90deg,#f4d23a 0 22px,transparent 22px 44px);
-  transform:translateY(-50%)
-}
-.shortcut-road span{
-  position:relative;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:800;
-  font-size:clamp(8px,1vw,14px);letter-spacing:1px;text-shadow:0 1px 3px rgba(0,0,0,.6);
-  opacity:.85
-}
+.cell-highlight.on{opacity:1}
 
-.cell{
-  border-radius:9px;position:relative;overflow:hidden;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:3px;text-align:center;color:#222;
-  box-shadow:0 2px 4px rgba(0,0,0,.18);min-width:0;
-}
-.cell .num{position:absolute;top:2px;left:4px;font-size:9px;font-weight:800;opacity:.7}
-.cell .ico{font-size:clamp(12px,1.7vw,22px);line-height:1}
-.cell .nm{font-size:clamp(5px,.78vw,9px);font-weight:800;line-height:1.05;margin-top:1px;text-transform:uppercase;letter-spacing:.2px}
-.cell .act{font-size:clamp(4px,.62vw,7.5px);font-weight:700;opacity:.85;margin-top:1px}
-
-.t-energia{background:#fde98a;border:2px solid var(--energia)}
-.t-transporte{background:#cfe0ff;border:2px solid var(--transporte)}
-.t-meio{background:#c3ecce;border:2px solid var(--meio)}
-.t-economia{background:#ffe0bd;border:2px solid var(--economia)}
-.t-sorte{background:#e6d2fb;border:2px solid var(--sorte)}
-.t-atalho{background:#cfd4da;border:2px solid var(--atalho)}
-.t-inicio{background:var(--inicio);color:#fff;border:2px solid #0d3d20}
-.t-fim{background:var(--fim);color:#fff;border:2px solid #0a3a1f}
-.t-inicio .nm,.t-fim .nm{color:#fff}
-
-.cell.active-cell{box-shadow:0 0 0 3px #fff,0 0 18px 4px #ffe06688;z-index:5}
-
-/* tokens (peões) — célula é praticamente quadrada (11x8 ≈ proporção do tabuleiro) */
+/* peões (tokens) sobre a imagem */
 .token{
-  position:absolute;width:4.6%;height:6.3%;border-radius:50%;
-  border:2px solid rgba(255,255,255,.92);
-  box-shadow:0 2px 6px rgba(0,0,0,.45);
+  position:absolute;width:3.8%;height:5.3%;border-radius:50%;
+  border:2px solid rgba(255,255,255,.95);
+  box-shadow:0 2px 7px rgba(0,0,0,.55);
   transition:left .45s cubic-bezier(.4,1.3,.5,1), top .45s cubic-bezier(.4,1.3,.5,1);
   z-index:8;display:flex;align-items:center;justify-content:center;
-  font-size:clamp(8px,1vw,13px);color:#fff;font-weight:900;line-height:1;
+  font-size:clamp(8px,1vw,14px);color:#fff;font-weight:900;line-height:1;
 }
-.token.lying{opacity:.65;filter:saturate(.6)}
+.token.lying{opacity:.6;filter:saturate(.5)}
 
 /* ---------- PANEL ---------- */
 .panel{

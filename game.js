@@ -117,14 +117,32 @@ for (let c=10;c>=0;c--) POS.push([7,c]);
 for (let r=6;r>=1;r--) POS.push([r,0]);
 
 /* ---------- Atalho da Fumaça (A1..A5) ----------
-   Diagonal reta partindo de cima da casa 22 (canto inferior) até perto do FIM. */
+   fx/fy = posição do centro da casa na imagem do tabuleiro (fração 0..1),
+   medida diretamente sobre assets/board.jpg. */
 const SHORTCUT = [
-  { id:'A1', nm:'Nuvem de Fumaça', ico:'🌫️', act:{type:'back',v:1},  pos:[6,5] },
-  { id:'A2', nm:'Sorte ou Revés',  ico:'❓', act:{type:'card'},      pos:[5,4] },
-  { id:'A3', nm:'Pneu Furado',     ico:'🛞', act:{type:'skip'},      pos:[4,3] },
-  { id:'A4', nm:'Sorte ou Revés',  ico:'❓', act:{type:'card'},      pos:[3,2] },
-  { id:'A5', nm:'Ar Pesado',       ico:'🌫️', act:{type:'back',v:1},  pos:[2,1] },
+  { id:'A1', nm:'Nuvem de Fumaça', ico:'🌫️', act:{type:'back',v:1}, fx:0.415, fy:0.766 },
+  { id:'A2', nm:'Sorte ou Revés',  ico:'❓', act:{type:'card'},     fx:0.342, fy:0.640 },
+  { id:'A3', nm:'Pneu Furado',     ico:'🛞', act:{type:'skip'},     fx:0.269, fy:0.514 },
+  { id:'A4', nm:'Sorte ou Revés',  ico:'❓', act:{type:'card'},     fx:0.196, fy:0.387 },
+  { id:'A5', nm:'Ar Pesado',       ico:'🌫️', act:{type:'back',v:1}, fx:0.123, fy:0.261 },
 ];
+
+/* ---------- Geometria da imagem do tabuleiro (assets/board.jpg) ----------
+   Grade 11x8 detectada: margem ~12px, passo ~196px, em 2188x1563. */
+const IMG = { W:2188, H:1563, x0:12, y0:12, px:196.7, py:195.6, cw:177, ch:177 };
+function cellFrac(r,c){
+  return { fx:(IMG.x0 + IMG.px*(c+0.5))/IMG.W, fy:(IMG.y0 + IMG.py*(r+0.5))/IMG.H };
+}
+/* fração do centro de qualquer casa do jogo (borda ou atalho) */
+function frac(player){
+  if (player.track==='short'){
+    if (player.sCell < 0) { const [r,c]=POS[22]; return cellFrac(r,c); } // junção = casa 22
+    const s = SHORTCUT[Math.min(player.sCell,4)];
+    return { fx:s.fx, fy:s.fy };
+  }
+  const [r,c] = POS[player.cell];
+  return cellFrac(r,c);
+}
 
 /* ---------- Cartas de Sorte ou Revés ---------- */
 const CARDS = [
@@ -250,102 +268,48 @@ function startGame(){
 function renderBoard(){
   const board = $('#board');
   board.innerHTML = '';
-
-  // faixa diagonal "Atalho da Fumaça" (decorativa, atrás das casas)
-  const road = document.createElement('div');
-  road.className = 'shortcut-road';
-  road.innerHTML = '<span>ATALHO DA FUMAÇA</span>';
-  board.appendChild(road);
-
-  // casas principais
-  BOARD.forEach((cell,idx)=>{
-    const [r,c] = POS[idx];
-    const el = document.createElement('div');
-    el.className = `cell t-${cell.t}`;
-    el.style.gridRow = (r+1);
-    el.style.gridColumn = (c+1);
-    el.id = `cell-${idx}`;
-    el.innerHTML = `
-      <span class="num">${cell.n}</span>
-      <span class="ico">${cell.ico}</span>
-      <span class="nm">${cell.nm}</span>
-      <span class="act">${actLabel(cell.act)}</span>`;
-    board.appendChild(el);
-  });
-
-  // casas do atalho
-  SHORTCUT.forEach((cell,i)=>{
-    const [r,c] = cell.pos;
-    const el = document.createElement('div');
-    el.className = 'cell t-atalho';
-    el.style.gridRow = (r+1);
-    el.style.gridColumn = (c+1);
-    el.id = `scell-${i}`;
-    el.innerHTML = `
-      <span class="num">${cell.id}</span>
-      <span class="ico">${cell.ico}</span>
-      <span class="nm">${cell.nm}</span>
-      <span class="act">${actLabel(cell.act)}</span>`;
-    board.appendChild(el);
-  });
-
+  // o tabuleiro É a imagem; só adicionamos o destaque da casa ativa e os peões por cima
+  const hl = document.createElement('div');
+  hl.id = 'cell-highlight';
+  hl.className = 'cell-highlight';
+  board.appendChild(hl);
   renderTokens();
 }
 
-function actLabel(a){
-  switch(a.type){
-    case 'adv': return `▶ Avance ${a.v}`;
-    case 'back': return `◀ Volte ${a.v}`;
-    case 'again': return '🎲 Jogue de novo';
-    case 'skip': return '⏸ Fique 1 rodada';
-    case 'card': return 'Puxe uma carta';
-    case 'choice6': return 'A/B · Escolha';
-    case 'choice22': return 'A/B · Bifurcação';
-    default: return '';
-  }
-}
-
-/* posiciona os peões em % dentro do tabuleiro */
+/* posiciona os peões sobre a imagem do tabuleiro (em %) */
 function renderTokens(){
   $$('.token').forEach(t=>t.remove());
   const board = $('#board');
 
-  // agrupa por casa para distribuir lado a lado
+  // agrupa por casa para distribuir lado a lado quando há vários no mesmo lugar
   const groups = {};
   state.players.forEach((p,i)=>{
     const key = p.track==='short' ? `s${p.sCell}` : `m${p.cell}`;
     (groups[key] ||= []).push(i);
   });
 
+  // meia-célula em fração da imagem (para distribuir peões dentro da casa)
+  const halfCX = (IMG.cw/IMG.W)/2, halfCY = (IMG.ch/IMG.H)/2;
+
   state.players.forEach((p,i)=>{
     const key = p.track==='short' ? `s${p.sCell}` : `m${p.cell}`;
     const grp = groups[key];
     const order = grp.indexOf(i);
 
-    let r,c;
-    if (p.track==='short'){
-      if (p.sCell < 0){ [r,c] = POS[22]; }            // junção = casa 22
-      else { [r,c] = SHORTCUT[Math.min(p.sCell,4)].pos; }
-    } else {
-      [r,c] = POS[p.cell];
-    }
-
-    // tamanho de uma célula em % do tabuleiro
-    const cellW = 100/11, cellH = 100/8;
-    // posição dentro da célula: centralizado se sozinho, 2x2 se houver vários
-    let fx = 0.5, fy = 0.5;
+    const f = frac(p);                 // centro da casa (fração 0..1)
+    let dx = 0, dy = 0;
     if (grp.length > 1){
-      fx = (order % 2) ? 0.68 : 0.32;
-      fy = (Math.floor(order/2)) ? 0.68 : 0.32;
+      dx = ((order % 2) ? 0.42 : -0.42) * halfCX;
+      dy = ((Math.floor(order/2)) ? 0.42 : -0.42) * halfCY;
     }
-    const cx = (c + fx) * cellW;   // centro do peão (% largura)
-    const cy = (r + fy) * cellH;   // centro do peão (% altura)
+    const cx = (f.fx + dx) * 100;       // % da largura
+    const cy = (f.fy + dy) * 100;       // % da altura
 
     const tk = document.createElement('div');
     tk.className = 'token' + (p.skip ? ' lying' : '');
     tk.style.background = p.color;
-    tk.style.left = `calc(${cx}% - 2.3%)`;   // metade da largura do peão (4.6%)
-    tk.style.top  = `calc(${cy}% - 3.15%)`;  // metade da altura do peão (6.3%)
+    tk.style.left = `calc(${cx}% - 1.9%)`;   // metade da largura do peão (3.8%)
+    tk.style.top  = `calc(${cy}% - 2.65%)`;  // metade da altura do peão (5.3%)
     tk.textContent = grp.length > 1 ? (i+1) : '';
     tk.title = p.name;
     board.appendChild(tk);
@@ -353,11 +317,16 @@ function renderTokens(){
 }
 
 function highlightCell(player){
-  $$('.cell').forEach(c=>c.classList.remove('active-cell'));
-  let el;
-  if (player.track==='short' && player.sCell>=0) el = $(`#scell-${player.sCell}`);
-  else el = $(`#cell-${player.cell}`);
-  if (el) el.classList.add('active-cell');
+  const hl = $('#cell-highlight');
+  if (!hl) return;
+  const f = frac(player);
+  // tamanho do destaque ~ uma casa (borda) ou um pouco menor (atalho)
+  const w = (IMG.cw/IMG.W)*100, h = (IMG.ch/IMG.H)*100;
+  hl.style.left = `calc(${f.fx*100}% - ${w/2}%)`;
+  hl.style.top  = `calc(${f.fy*100}% - ${h/2}%)`;
+  hl.style.width = w+'%';
+  hl.style.height = h+'%';
+  hl.classList.add('on');
 }
 
 /* ===========================================================
@@ -526,7 +495,7 @@ function endTurn(){
   renderStatus();
   updateTurnBanner();
   $('#btn-roll').disabled = false;
-  $$('.cell').forEach(c=>c.classList.remove('active-cell'));
+  $('#cell-highlight')?.classList.remove('on');
 }
 
 /* ===========================================================
