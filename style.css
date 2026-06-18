@@ -133,6 +133,28 @@ h1,h2,h3,.btn-primary,.dice,.turn-banner{font-family:'Baloo 2',sans-serif}
   -webkit-tap-highlight-color:transparent;user-select:none
 }
 
+/* faixa diagonal do Atalho da Fumaça (decorativa) — vai do canto da casa 22 ao FIM */
+.shortcut-road{
+  position:absolute;left:31.8%;top:56.25%;
+  width:64%;height:11.5%;
+  transform:translate(-50%,-50%) rotate(45deg);
+  background:repeating-linear-gradient(90deg,#5b6066 0 26px,#54585e 26px 52px);
+  border-radius:8px;z-index:0;
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.08), 0 6px 16px rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:flex-end;overflow:hidden;
+  padding-right:18px;
+}
+.shortcut-road::before{
+  content:"";position:absolute;left:6%;right:6%;top:50%;height:3px;
+  background:repeating-linear-gradient(90deg,#f4d23a 0 22px,transparent 22px 44px);
+  transform:translateY(-50%)
+}
+.shortcut-road span{
+  position:relative;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:800;
+  font-size:clamp(8px,1vw,14px);letter-spacing:1px;text-shadow:0 1px 3px rgba(0,0,0,.6);
+  opacity:.85
+}
+
 .cell{
   border-radius:9px;position:relative;overflow:hidden;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
