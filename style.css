@@ -98,10 +98,19 @@ h1,h2,h3,.btn-primary,.dice,.turn-banner{font-family:'Baloo 2',sans-serif}
 
 /* ---------- TABLET / CELULAR ---------- */
 @media(max-width:1000px){
-  .game-wrap{grid-template-columns:1fr;gap:12px;padding:10px;
-    padding-bottom:calc(96px + env(safe-area-inset-bottom))}
-  .board{width:min(96vw,560px)}
-  .panel{order:0;gap:12px}
+  .game-wrap{
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:8px;
+    padding-bottom:calc(94px + env(safe-area-inset-bottom));
+    align-items:start;
+    min-height:auto;
+  }
+  .board-area{width:100%}
+  .board{width:100%;max-width:720px;margin:0 auto}
+  .panel{
+    order:0;gap:10px;width:100%;max-width:720px;margin:0 auto;padding:14px;
+  }
   /* barra de controle fixa no rodapé, sempre alcançável pelo polegar */
   .dice-box{
     position:fixed;left:0;right:0;bottom:0;z-index:30;
@@ -110,15 +119,21 @@ h1,h2,h3,.btn-primary,.dice,.turn-banner{font-family:'Baloo 2',sans-serif}
     padding:10px 14px calc(10px + env(safe-area-inset-bottom));
     box-shadow:0 -6px 20px rgba(0,0,0,.25)
   }
-  .dice-box .dice{width:56px;height:56px;font-size:34px;flex:none}
-  .dice-box .btn-primary.big{flex:1;padding:15px}
-  .log-box{max-height:130px}
+  .dice-box .dice{width:52px;height:52px;font-size:30px;flex:none;border-radius:12px}
+  .dice-box .btn-primary.big{flex:1;padding:14px;font-size:17px}
+  .log-box{max-height:120px}
 }
 
 @media(max-width:560px){
-  .board{width:97vw}
   .start-card{padding:26px 20px}
   .logo h1{font-size:30px}
+  .panel-title{font-size:18px}
+  .turn-banner{font-size:17px;padding:10px 12px}
+}
+
+/* celular em modo retrato: aproveita melhor a largura para o tabuleiro */
+@media(max-width:1000px) and (orientation:portrait){
+  .game-wrap{padding:6px;padding-bottom:calc(94px + env(safe-area-inset-bottom))}
 }
 
 /* evita seleção de texto ao tocar repetidamente */
