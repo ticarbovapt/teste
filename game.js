@@ -34,8 +34,7 @@ const SOUND = (()=>{
   function seq(notes, type='triangle', vol=0.18){
     notes.forEach(([f,s,d])=> tone(f,d,type,vol,s));
   }
-  function noise(dur, vol=0.12){
-    const c = ensure(); if(!c||muted) return;
+  function noise(dur, vol=0.12){    const c = ensure(); if(!c||muted) return;
     const n = Math.floor(c.sampleRate*dur);
     const buf = c.createBuffer(1, n, c.sampleRate);
     const data = buf.getChannelData(0);
@@ -46,10 +45,27 @@ const SOUND = (()=>{
     src.connect(hp); hp.connect(gain); gain.connect(c.destination);
     src.start();
   }
+  // glissando: varre a frequência (de f0 a f1) num único oscilador
+  function glide(f0, f1, dur, type='square', vol=0.18, when=0){
+    const c = ensure(); if(!c||muted) return;
+    const t = c.currentTime + when;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f0, t);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(40,f1), t+dur);
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.setValueAtTime(vol, t+dur*0.7);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    osc.connect(gain); gain.connect(c.destination);
+    osc.start(t); osc.stop(t+dur+0.02);
+  }
   return {
     unlock(){ ensure(); },
     setMuted(m){ muted = m; },
     isMuted(){ return muted; },
+    // som do "Mario entrando no cano": glissando descendente rápido
+    pipe(){ glide(1200, 90, 0.55, 'square', 0.16); glide(600, 45, 0.55, 'square', 0.07); },
     click(){ tone(520,0.06,'square',0.10); },
     dice(){ noise(0.12,0.10); for(let i=0;i<3;i++) tone(180+Math.random()*120,0.05,'square',0.06,i*0.05); },
     adv(){ seq([[523,0,0.10],[659,0.09,0.10],[784,0.18,0.14]],'triangle',0.16); },
@@ -590,6 +606,7 @@ function showChoice22(p){
   a.innerHTML='🌫️ A · Atalho da Fumaça<br><small>Curto (5 casas) e joga o dado de novo — arriscado!</small>';
   a.onclick=()=>{
     closeModal();
+    SOUND.pipe();   // som do Mario entrando no cano
     p.track='short'; p.sCell=-1;
     log(`🌫️ <b>${p.name}</b> entrou no <b>Atalho da Fumaça</b> e joga o dado de novo! 🎲`);
     renderTokens(); renderStatus();
