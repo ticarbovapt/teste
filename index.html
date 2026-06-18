@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cidade do Futuro · Energia em Jogo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ============ TELA INICIAL ============ -->
+  <section id="screen-start" class="screen active">
+    <div class="start-card">
+      <div class="logo">
+        <div class="logo-badge">🌆</div>
+        <h1>Cidade do Futuro</h1>
+        <p class="subtitle">Energia em Jogo</p>
+      </div>
+
+      <p class="intro">
+        Uma corrida pela cidade sustentável! Escolhas limpas fazem avançar,
+        a poluição atrasa. Quem chegar primeiro ao <b>FIM</b> vence.
+      </p>
+
+      <div class="field">
+        <label>Quantos jogadores?</label>
+        <div id="player-count" class="count-picker">
+          <button data-n="2">2</button>
+          <button data-n="3">3</button>
+          <button data-n="4" class="sel">4</button>
+        </div>
+      </div>
+
+      <div id="player-inputs" class="player-inputs"></div>
+
+      <button id="btn-start" class="btn-primary big">▶ Começar a jogar</button>
+      <button id="btn-rules" class="btn-ghost">📖 Como jogar</button>
+    </div>
+  </section>
+
+  <!-- ============ TELA DO JOGO ============ -->
+  <section id="screen-game" class="screen">
+    <div class="game-wrap">
+      <div class="board-area">
+        <div id="board" class="board"></div>
+      </div>
+
+      <aside class="panel">
+        <h2 class="panel-title">🌆 Cidade do Futuro</h2>
+
+        <div id="turn-banner" class="turn-banner">
+          <span class="dot"></span>
+          <span id="turn-name">Jogador</span>
+        </div>
+
+        <div class="dice-box">
+          <div id="dice" class="dice">🎲</div>
+          <button id="btn-roll" class="btn-primary big">Girar o dado</button>
+        </div>
+
+        <div id="players-status" class="players-status"></div>
+
+        <div class="log-box">
+          <h3>Eventos</h3>
+          <ul id="log"></ul>
+        </div>
+
+        <button id="btn-restart" class="btn-ghost small">↺ Reiniciar partida</button>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ MODAIS ============ -->
+  <div id="modal-overlay" class="overlay">
+    <!-- Modal genérico (carta / escolhas) -->
+    <div id="modal" class="modal">
+      <div id="modal-icon" class="modal-icon">❓</div>
+      <h2 id="modal-title">Título</h2>
+      <p id="modal-text">Texto</p>
+      <div id="modal-actions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <!-- ============ TELA DE VITÓRIA ============ -->
+  <div id="win-overlay" class="overlay">
+    <div class="win-card">
+      <div class="trophy">🏆</div>
+      <h2>Vitória!</h2>
+      <p id="win-name">Jogador venceu!</p>
+      <p class="win-sub">Cuidou melhor da cidade e chegou primeiro ao FIM.</p>
+      <button id="btn-playagain" class="btn-primary big">Jogar de novo</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL DE REGRAS ============ -->
+  <div id="rules-overlay" class="overlay">
+    <div class="rules-card">
+      <h2>📖 Como jogar</h2>
+      <ul>
+        <li>Cada jogador escolhe um peão e parte do <b>INÍCIO</b>.</li>
+        <li>Na sua vez, gire o dado (1 a 6) e ande o número de casas.</li>
+        <li>Faça o que a casa mandar: avançar, voltar, jogar de novo ou ficar 1 rodada parado.</li>
+        <li>Casa roxa <b>(?)</b>: puxe uma carta de Sorte ou Revés.</li>
+        <li>Na casa <b>6</b>, escolha entre energia poluente (arriscada) ou limpa (segura).</li>
+        <li>Parou na casa <b>22</b>? Escolha o <b>Caminho Verde</b> ou o <b>Atalho da Fumaça</b> — curto, mas arriscado!</li>
+        <li>O efeito da casa só vale quando você chega nela pelo dado.</li>
+        <li>Sem eliminação: as punições são temporárias.</li>
+        <li>Vence quem alcançar ou ultrapassar primeiro o <b>FIM</b> — não precisa número exato!</li>
+      </ul>
+      <button id="btn-close-rules" class="btn-primary">Entendi</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
