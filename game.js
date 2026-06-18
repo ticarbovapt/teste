@@ -64,13 +64,26 @@ const SOUND = (()=>{
     unlock(){ ensure(); },
     setMuted(m){ muted = m; },
     isMuted(){ return muted; },
-    // som do "Mario entrando no cano": escadinha de blips descendo (glub-glub 8-bit)
+    // som do "Mario entrando no cano" (aproximação 8-bit): varredura rápida
+    // descendente em onda pulsada, no estilo do efeito do NES.
     pipe(){
-      const notes=[988,830,698,587,494,415,349,294,247,208,175,147,123,98];
-      notes.forEach((f,i)=>{
-        tone(f, 0.06, 'square', 0.15, i*0.05);          // blip principal
-        tone(f/2, 0.06, 'square', 0.06, i*0.05);        // oitava abaixo, encorpa o "glub"
-      });
+      const c = ensure(); if(!c||muted) return;
+      const t = c.currentTime;
+      const dur = 0.42;
+      // canal principal (pulse/square) varrendo de agudo para grave
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1320, t);
+      osc.frequency.exponentialRampToValueAtTime(110, t+dur);
+      gain.gain.setValueAtTime(0.16, t);
+      gain.gain.setValueAtTime(0.16, t+dur*0.82);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(t); osc.stop(t+dur+0.02);
+      // pequenos degraus por cima dão o caráter "step" do chip de som
+      const steps=[1175,988,830,698,587,494,415,349,294,247,196,165,131];
+      steps.forEach((f,i)=> tone(f, 0.028, 'square', 0.07, i*(dur/steps.length)));
     },
     click(){ tone(520,0.06,'square',0.10); },
     dice(){ noise(0.12,0.10); for(let i=0;i<3;i++) tone(180+Math.random()*120,0.05,'square',0.06,i*0.05); },
