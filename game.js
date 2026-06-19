@@ -406,6 +406,35 @@ function log(html){
    =========================================================== */
 $('#btn-roll').addEventListener('click', rollDice);
 
+/* casas que faltam para o FIM (quanto menor, mais perto de vencer) */
+function distanceToFim(p){
+  if (p.track==='short') return 5 - p.sCell;   // junção(-1)=6 ... A5(4)=1
+  return 33 - p.cell;
+}
+/* menor distância ao FIM entre todos (o líder) */
+function leaderMinDistance(){
+  return Math.min(...state.players.map(distanceToFim));
+}
+
+/* Valor do dado. Em geral é puro acaso (1..6).
+   ÚNICO ajuste — "equilíbrio": quando o LÍDER está perto de vencer (~2 jogadas),
+   os jogadores que estão ATRÁS e ainda ANTES da casa 22 ganham chance aumentada
+   de tirar exatamente o número que cai na casa 22, para terem a opção do Atalho
+   da Fumaça e uma chance de reagir. Nada além disso é alterado. */
+function rollValue(p){
+  const fair = 1 + Math.floor(Math.random()*6);
+  if (!state || state.players.length < 2) return fair;
+  if (p.track !== 'main' || p.cell >= 22) return fair;     // já passou/está na 22 ou no atalho
+  const need = 22 - p.cell;
+  if (need < 1 || need > 6) return fair;                    // 22 não está ao alcance neste lance
+  const lead = leaderMinDistance();
+  if (lead > 8) return fair;                                // líder ainda não está perto do fim
+  if (distanceToFim(p) <= lead) return fair;               // este jogador é (co)líder: sem ajuda
+  // chance aumentada (maior se o líder estiver mais perto de ganhar)
+  const boost = lead <= 3 ? 0.60 : (lead <= 6 ? 0.50 : 0.40);
+  return (Math.random() < boost) ? need : fair;
+}
+
 function rollDice(){
   if (state.busy || state.finished) return;
   const p = state.players[state.cur];
@@ -431,7 +460,7 @@ function rollDice(){
     dice.textContent = DICE_FACES[1+Math.floor(Math.random()*6)];
     if (++ticks>8){
       clearInterval(anim);
-      const roll = 1+Math.floor(Math.random()*6);
+      const roll = rollValue(p);
       dice.textContent = DICE_FACES[roll];
       dice.classList.remove('rolling');
       log(`<b>${p.name}</b> tirou <b>${roll}</b> no dado. 🎲`);
