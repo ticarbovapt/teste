@@ -294,7 +294,7 @@ function startGame(){
   renderBoard();
   renderStatus();
   updateTurnBanner();
-  log(`A partida começou! Boa sorte na <b>Cidade do Futuro</b>. 🌆`);
+  log(`A partida começou! Boa sorte na <b>Ecocity</b>. 🌆`);
 }
 
 /* ===========================================================
