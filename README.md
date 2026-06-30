@@ -1,7 +1,7 @@
-# 🌆 Cidade do Futuro · Energia em Jogo
+# 🌆 Ecocity · Energia em Jogo
 
 Jogo de tabuleiro digital para **até 4 jogadores** no mesmo dispositivo, baseado no
-trabalho de ICT 2026 *"Cidade do Futuro – Energia em Jogo"*. É uma corrida por uma
+trabalho de ICT 2026 *"Ecocity – Energia em Jogo"*. É uma corrida por uma
 cidade sustentável: escolhas limpas fazem avançar, a poluição atrasa. Vence quem
 chegar primeiro ao **FIM**.
 
